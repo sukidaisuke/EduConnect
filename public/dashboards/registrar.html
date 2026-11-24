@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar Dashboard | EduConnect LUNHS SHS</title>
+  <style>
+    :root {
+      --dark-plum: #301C4E;
+      --med-purple: #5B3491;
+      --lavender: #A889CF;
+      --bg-light: #F8F5FC;
+      --emerald: #2D875F;
+      --charcoal: #2B2633;
+      --muted: #696370;
+      --border: #DFD5EC;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: var(--bg-light); color: var(--charcoal); }
+
+    /* Top Navbar */
+    .topbar {
+      background: var(--dark-plum);
+      color: #fff;
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-weight: 800; font-size: 1.2rem; letter-spacing: 0.03em; }
+    .brand span { color: var(--lavender); font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem; }
+    .user-info { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+    .btn-logout {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+    .container { max-width: 1200px; margin: 1.8rem auto; padding: 0 1.5rem; }
+
+    /* Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--med-purple);
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+    }
+    .stat-card.green { border-left-color: var(--emerald); }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; color: var(--dark-plum); margin-top: 0.2rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .tab-btn {
+      padding: 0.65rem 1.2rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--dark-plum);
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--med-purple); color: #fff; border-color: var(--med-purple); }
+
+    .panel { display: none; }
+    .panel.active { display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 900px) { .panel.active { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1.1rem; color: var(--dark-plum); }
+
+    .form-group { margin-bottom: 0.85rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; }
+    input, select {
+      width: 100%;
+      padding: 0.58rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--med-purple); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--med-purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.3rem;
+    }
+    .btn-primary:hover { background: var(--dark-plum); }
+    .btn-emerald { background: var(--emerald); }
+    .btn-emerald:hover { background: #216849; }
+
+    .alert {
+      display: none;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 1rem;
+    }
+    .alert.success { background: #E8F5EF; color: var(--emerald); border: 1px solid #B7DFC9; }
+    .alert.error { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6CB; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th {
+      background: var(--med-purple);
+      color: #fff;
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+    }
+    td { padding: 0.62rem 0.75rem; border-bottom: 1px solid #EEE7F7; }
+    tr:hover td { background: #FAF7FE; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: #EBE2F8;
+      color: var(--dark-plum);
+    }
+    .badge.enrolled { background: #E8F5EF; color: var(--emerald); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">EDUCONNECT <span>LUNHS • Senior High School Registrar</span></div>
+    <div class="user-info">
+      <span id="welcomeUser">Loading...</span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="globalAlert" class="alert"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Registered SHS Students</div>
+        <div class="stat-value" id="statStudents">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Active Enrollments</div>
+        <div class="stat-value" id="statEnrollments">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SHS Strand Sections</div>
+        <div class="stat-value" id="statSections">0</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('studentsTab', this)">1. SHS Student Records</button>
+      <button class="tab-btn" onclick="switchTab('enrollmentTab', this)">2. Section Enrollment</button>
+    </div>
+
+    <!-- TAB 1: STUDENT REGISTRATION & DIRECTORY -->
+    <section id="studentsTab" class="panel active">
+      <div class="card">
+        <h2>Register New SHS Student</h2>
+        <form id="studentForm">
+          <div class="form-group">
+            <label>Learner Reference Number (LRN - 12 digits)</label>
+            <input type="text" id="lrn" maxlength="12" pattern="\d{12}" placeholder="e.g., 109482180099" required />
+          </div>
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="e.g., Sofia" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="e.g., Bautista" required />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="gender" required>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>SHS Grade Level</label>
+            <select id="gradeLevel" required>
+              <option value="Grade 11">Grade 11</option>
+              <option value="Grade 12">Grade 12</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Track / Strand</label>
+            <select id="trackStrand" required>
+              <option value="STEM">Academic — STEM</option>
+              <option value="ABM">Academic — ABM</option>
+              <option value="HUMSS">Academic — HUMSS</option>
+              <option value="GAS">Academic — GAS</option>
+              <option value="TVL - ICT">TVL — ICT</option>
+              <option value="TVL - HE">TVL — Home Economics</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>School Email (optional — auto-generated if blank)</label>
+            <input type="email" id="email" placeholder="s.bautista@lunhs.edu.ph" />
+          </div>
+          <button type="submit" class="btn-primary">Save SHS Student Record</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>SHS Student Directory</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>LRN</th>
+                <th>Full Name</th>
+                <th>Grade</th>
+                <th>Track/Strand</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SECTION ENROLLMENT -->
+    <section id="enrollmentTab" class="panel">
+      <div class="card">
+        <h2>Enroll Student to SHS Section</h2>
+        <form id="enrollForm">
+          <div class="form-group">
+            <label>Select SHS Student</label>
+            <select id="enrollStudentSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>Assign Section</label>
+            <select id="enrollSectionSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>School Year</label>
+            <input type="text" id="schoolYear" value="2026-2027" required />
+          </div>
+          <button type="submit" class="btn-primary btn-emerald">Confirm Enrollment</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>SHS Enrollment Masterlist</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Enroll ID</th>
+                <th>Student</th>
+                <th>LRN</th>
+                <th>Section</th>
+                <th>Strand</th>
+                <th>School Year</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="enrollmentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showAlert(msg, type = 'success') {
+      const box = document.getElementById('globalAlert');
+      box.textContent = msg;
+      box.className = `alert ${type}`;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 5000);
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function checkSession() {
+      const res = await fetch('../../api/auth/session.php');
+      if (!res.ok) {
+        window.location.href = '../index.html';
+        return;
+      }
+      const data = await res.json();
+      if (data.user.Role !== 'Registrar' && data.user.Role !== 'Administrator') {
+        window.location.href = '../index.html';
+        return;
+      }
+      document.getElementById('welcomeUser').textContent = `${data.user.FullName} (${data.user.Role})`;
+    }
+
+    async function logout() {
+      await fetch('../../api/auth/logout.php');
+      window.location.href = '../index.html';
+    }
+
+    async function loadStudents() {
+      const res = await fetch('../../api/students/read.php');
+      const json = await res.json();
+      const students = json.data || [];
+      document.getElementById('statStudents').textContent = students.length;
+
+      const tbody = document.getElementById('studentsTableBody');
+      const select = document.getElementById('enrollStudentSelect');
+      tbody.innerHTML = '';
+      select.innerHTML = '<option value="">-- Choose SHS Student --</option>';
+
+      students.forEach(s => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${s.StudentID}</strong></td>
+            <td>${s.LRN}</td>
+            <td>${s.FirstName} ${s.LastName}</td>
+            <td>${s.GradeLevel}</td>
+            <td><span class="badge">${s.TrackStrand}</span></td>
+            <td>${s.Email || '-'}</td>
+          </tr>
+        `;
+        select.innerHTML += `<option value="${s.StudentID}">${s.StudentID} — ${s.LastName}, ${s.FirstName} (${s.GradeLevel} ${s.TrackStrand})</option>`;
+      });
+    }
+
+    async function loadSections() {
+      const res = await fetch('../../api/enrollment/sections.php');
+      const json = await res.json();
+      const sections = json.data || [];
+      document.getElementById('statSections').textContent = sections.length;
+
+      const select = document.getElementById('enrollSectionSelect');
+      select.innerHTML = '<option value="">-- Choose SHS Section --</option>';
+      sections.forEach(sec => {
+        select.innerHTML += `<option value="${sec.SectionID}">${sec.SectionName} (${sec.GradeLevel} • Adviser: ${sec.AdviserName || 'TBA'})</option>`;
+      });
+    }
+
+    async function loadEnrollments() {
+      const res = await fetch('../../api/enrollment/read.php');
+      const json = await res.json();
+      const list = json.data || [];
+      document.getElementById('statEnrollments').textContent = list.length;
+
+      const tbody = document.getElementById('enrollmentTableBody');
+      tbody.innerHTML = '';
+      list.forEach(e => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${e.EnrollmentID}</strong></td>
+            <td>${e.StudentName} (${e.StudentID})</td>
+            <td>${e.LRN}</td>
+            <td>${e.SectionName}</td>
+            <td><span class="badge">${e.TrackStrand}</span></td>
+            <td>${e.SchoolYear}</td>
+            <td><span class="badge enrolled">${e.Status}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        LRN: document.getElementById('lrn').value.trim(),
+        FirstName: document.getElementById('firstName').value.trim(),
+        LastName: document.getElementById('lastName').value.trim(),
+        Gender: document.getElementById('gender').value,
+        GradeLevel: document.getElementById('gradeLevel').value,
+        TrackStrand: document.getElementById('trackStrand').value,
+        Email: document.getElementById('email').value.trim()
+      };
+
+      const res = await fetch('../../api/students/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showAlert(data.message, 'success');
+        e.target.reset();
+        loadStudents();
+      } else {
+        showAlert(data.message, 'error');
+      }
+    });
+
+    document.getElementById('enrollForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        StudentID: document.getElementById('enrollStudentSelect').value,
+        SectionID: document.getElementById('enrollSectionSelect').value,
+        SchoolYear: document.getElementById('schoolYear').value.trim()
+      };
+
+      const res = await fetch('../../api/enrollment/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showAlert(data.message, 'success');
+        loadEnrollments();
+      } else {
+        showAlert(data.message, 'error');
+      }
+    });
+
+    (async () => {
+      await checkSession();
+      await Promise.all([loadStudents(), loadSections(), loadEnrollments()]);
+    })();
+  </script>
+</body>
+</html>

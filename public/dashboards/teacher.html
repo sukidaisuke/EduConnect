@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard | EduConnect LUNHS SHS</title>
+  <style>
+    :root {
+      --dark-plum: #301C4E;
+      --med-purple: #5B3491;
+      --lavender: #A889CF;
+      --bg-light: #F8F5FC;
+      --emerald: #2D875F;
+      --charcoal: #2B2633;
+      --muted: #696370;
+      --border: #DFD5EC;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: var(--bg-light); color: var(--charcoal); }
+
+    .topbar {
+      background: var(--dark-plum);
+      color: #fff;
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-weight: 800; font-size: 1.2rem; letter-spacing: 0.03em; }
+    .brand span { color: var(--lavender); font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem; }
+    .user-info { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+    .btn-logout {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+    .container { max-width: 1200px; margin: 1.8rem auto; padding: 0 1.5rem; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--med-purple);
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+    }
+    .stat-card.green { border-left-color: var(--emerald); }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; color: var(--dark-plum); margin-top: 0.2rem; }
+
+    .tabs { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .tab-btn {
+      padding: 0.65rem 1.2rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--dark-plum);
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--med-purple); color: #fff; border-color: var(--med-purple); }
+
+    .panel { display: none; }
+    .panel.active { display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 900px) { .panel.active { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1.1rem; color: var(--dark-plum); }
+
+    .form-group { margin-bottom: 0.85rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; }
+    input, select {
+      width: 100%;
+      padding: 0.58rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--med-purple); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--med-purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.3rem;
+    }
+    .btn-primary:hover { background: var(--dark-plum); }
+    .btn-emerald { background: var(--emerald); }
+    .btn-emerald:hover { background: #216849; }
+
+    .alert {
+      display: none;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 1rem;
+    }
+    .alert.success { background: #E8F5EF; color: var(--emerald); border: 1px solid #B7DFC9; }
+    .alert.error { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6CB; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th {
+      background: var(--med-purple);
+      color: #fff;
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+    }
+    td { padding: 0.62rem 0.75rem; border-bottom: 1px solid #EEE7F7; }
+    tr:hover td { background: #FAF7FE; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: #EBE2F8;
+      color: var(--dark-plum);
+    }
+    .badge.present, .badge.passed { background: #E8F5EF; color: var(--emerald); }
+    .badge.absent, .badge.failed { background: #FDECEA; color: #B71C1C; }
+    .badge.late, .badge.excused { background: #FFF8E1; color: #B26A00; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">EDUCONNECT <span>LUNHS • Senior High School Faculty Portal</span></div>
+    <div class="user-info">
+      <span id="welcomeUser">Loading...</span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="globalAlert" class="alert"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Enrolled SHS Students</div>
+        <div class="stat-value" id="statEnrolled">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Attendance Logs</div>
+        <div class="stat-value" id="statAttendance">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Encoded Subject Grades</div>
+        <div class="stat-value" id="statGrades">0</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('attendanceTab', this)">1. Daily Attendance</button>
+      <button class="tab-btn" onclick="switchTab('gradesTab', this)">2. Semestral Grade Encoding (75–100)</button>
+    </div>
+
+    <!-- TAB 1: DAILY ATTENDANCE -->
+    <section id="attendanceTab" class="panel active">
+      <div class="card">
+        <h2>Record Daily Attendance</h2>
+        <form id="attendanceForm">
+          <div class="form-group">
+            <label>Select Enrolled Student</label>
+            <select id="attEnrollmentSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="attDate" required />
+          </div>
+          <div class="form-group">
+            <label>Attendance Status</label>
+            <select id="attStatus" required>
+              <option value="Present">Present</option>
+              <option value="Late">Late</option>
+              <option value="Absent">Absent</option>
+              <option value="Excused">Excused</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary btn-emerald">Save Attendance</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>SHS Attendance Logs</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Log ID</th>
+                <th>Date</th>
+                <th>Student</th>
+                <th>Section</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SEMESTRAL GRADES -->
+    <section id="gradesTab" class="panel">
+      <div class="card">
+        <h2>Encode Semestral Grade</h2>
+        <form id="gradeForm">
+          <div class="form-group">
+            <label>Select Enrolled Student</label>
+            <select id="gradeEnrollmentSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>SHS Subject</label>
+            <select id="gradeSubjectSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>Grading Period</label>
+            <select id="gradingPeriod" required>
+              <option value="1st Semester - Midterm">1st Semester - Midterm</option>
+              <option value="1st Semester - Final">1st Semester - Final</option>
+              <option value="2nd Semester - Midterm">2nd Semester - Midterm</option>
+              <option value="2nd Semester - Final">2nd Semester - Final</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Final / Quarter Grade (DepEd 60–100 Scale)</label>
+            <input type="number" id="gradeValue" min="60" max="100" step="0.01" placeholder="e.g., 92" required />
+          </div>
+          <button type="submit" class="btn-primary">Save Grade</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>SHS Grade Sheet</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Grade ID</th>
+                <th>Student</th>
+                <th>Section</th>
+                <th>Subject</th>
+                <th>Period</th>
+                <th>Grade</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="gradesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showAlert(msg, type = 'success') {
+      const box = document.getElementById('globalAlert');
+      box.textContent = msg;
+      box.className = `alert ${type}`;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 5000);
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function checkSession() {
+      const res = await fetch('../../api/auth/session.php');
+      if (!res.ok) {
+        window.location.href = '../index.html';
+        return;
+      }
+      const data = await res.json();
+      if (data.user.Role !== 'Teacher' && data.user.Role !== 'Administrator') {
+        window.location.href = '../index.html';
+        return;
+      }
+      document.getElementById('welcomeUser').textContent = `${data.user.FullName} (${data.user.Role})`;
+    }
+
+    async function logout() {
+      await fetch('../../api/auth/logout.php');
+      window.location.href = '../index.html';
+    }
+
+    async function loadEnrollments() {
+      const res = await fetch('../../api/enrollment/read.php');
+      const json = await res.json();
+      const list = json.data || [];
+      document.getElementById('statEnrolled').textContent = list.length;
+
+      const attSelect = document.getElementById('attEnrollmentSelect');
+      const grdSelect = document.getElementById('gradeEnrollmentSelect');
+      attSelect.innerHTML = '<option value="">-- Choose Enrolled Student --</option>';
+      grdSelect.innerHTML = '<option value="">-- Choose Enrolled Student --</option>';
+
+      list.forEach(e => {
+        const label = `${e.StudentName} (${e.SectionName} • ${e.EnrollmentID})`;
+        attSelect.innerHTML += `<option value="${e.EnrollmentID}">${label}</option>`;
+        grdSelect.innerHTML += `<option value="${e.EnrollmentID}">${label}</option>`;
+      });
+    }
+
+    async function loadSubjects() {
+      const res = await fetch('../../api/grades/subjects.php');
+      const json = await res.json();
+      const subjects = json.data || [];
+      const subSelect = document.getElementById('gradeSubjectSelect');
+      subSelect.innerHTML = '<option value="">-- Choose SHS Subject --</option>';
+      subjects.forEach(sub => {
+        subSelect.innerHTML += `<option value="${sub.SubjectID}">${sub.SubjectName} (${sub.SubjectType})</option>`;
+      });
+    }
+
+    async function loadAttendance() {
+      const res = await fetch('../../api/attendance/read.php');
+      const json = await res.json();
+      const logs = json.data || [];
+      document.getElementById('statAttendance').textContent = logs.length;
+
+      const tbody = document.getElementById('attendanceTableBody');
+      tbody.innerHTML = '';
+      logs.forEach(a => {
+        const cls = a.Status.toLowerCase();
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${a.AttendanceID}</strong></td>
+            <td>${a.Date}</td>
+            <td>${a.StudentName}</td>
+            <td>${a.SectionName}</td>
+            <td><span class="badge ${cls}">${a.Status}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    async function loadGrades() {
+      const res = await fetch('../../api/grades/read.php');
+      const json = await res.json();
+      const grades = json.data || [];
+      document.getElementById('statGrades').textContent = grades.length;
+
+      const tbody = document.getElementById('gradesTableBody');
+      tbody.innerHTML = '';
+      grades.forEach(g => {
+        const cls = g.Remarks.toLowerCase();
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${g.GradeID}</strong></td>
+            <td>${g.StudentName}</td>
+            <td>${g.SectionName}</td>
+            <td>${g.SubjectName}</td>
+            <td>${g.GradingPeriod}</td>
+            <td><strong>${parseFloat(g.Grade).toFixed(2)}</strong></td>
+            <td><span class="badge ${cls}">${g.Remarks}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        EnrollmentID: document.getElementById('attEnrollmentSelect').value,
+        Date: document.getElementById('attDate').value,
+        Status: document.getElementById('attStatus').value
+      };
+
+      const res = await fetch('../../api/attendance/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showAlert(data.message, 'success');
+        loadAttendance();
+      } else {
+        showAlert(data.message, 'error');
+      }
+    });
+
+    document.getElementById('gradeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        EnrollmentID: document.getElementById('gradeEnrollmentSelect').value,
+        SubjectID: document.getElementById('gradeSubjectSelect').value,
+        GradingPeriod: document.getElementById('gradingPeriod').value,
+        Grade: document.getElementById('gradeValue').value
+      };
+
+      const res = await fetch('../../api/grades/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showAlert(data.message, 'success');
+        document.getElementById('gradeValue').value = '';
+        loadGrades();
+      } else {
+        showAlert(data.message, 'error');
+      }
+    });
+
+    (async () => {
+      document.getElementById('attDate').valueAsDate = new Date();
+      await checkSession();
+      await Promise.all([loadEnrollments(), loadSubjects(), loadAttendance(), loadGrades()]);
+    })();
+  </script>
+</body>
+</html>

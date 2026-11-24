@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduConnect | LUNHS Senior High School Portal</title>
+  <style>
+    :root {
+      --dark-plum: #301C4E;
+      --med-purple: #5B3491;
+      --lavender: #A889CF;
+      --bg-light: #F8F5FC;
+      --emerald: #2D875F;
+      --charcoal: #2B2633;
+      --muted: #696370;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--dark-plum) 0%, var(--med-purple) 100%);
+      padding: 1rem;
+    }
+    .login-card {
+      background: #fff;
+      width: 100%;
+      max-width: 430px;
+      border-radius: 14px;
+      padding: 2.2rem 2rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+    }
+    .school-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--med-purple);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    h1 {
+      margin: 0 0 0.25rem;
+      color: var(--dark-plum);
+      font-size: 1.85rem;
+    }
+    .subtitle {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .form-group { margin-bottom: 1.1rem; }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      margin-bottom: 0.35rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      border: 1.5px solid #DFD5EC;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--med-purple); }
+    button.btn-login {
+      width: 100%;
+      padding: 0.78rem;
+      background: var(--med-purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.4rem;
+      transition: background 0.2s;
+    }
+    button.btn-login:hover { background: var(--dark-plum); }
+    .alert {
+      display: none;
+      padding: 0.7rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 1rem;
+    }
+    .alert.error { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6CB; }
+    .alert.success { background: #E8F5EF; color: var(--emerald); border: 1px solid #B7DFC9; }
+    .demo-box {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #EEE7F7;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .demo-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .pill {
+      background: var(--bg-light);
+      color: var(--dark-plum);
+      border: 1px solid #DFD5EC;
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      font-size: 0.76rem;
+      cursor: pointer;
+    }
+    .pill:hover { background: #EBE2F8; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="school-tag">La Union National High School • SHS</div>
+    <h1>EDUCONNECT</h1>
+    <p class="subtitle">Integrated Senior High School Management System</p>
+
+    <div id="alertBox" class="alert"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="e.g., registrar" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password" required />
+      </div>
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+
+    <div class="demo-box">
+      <strong>Quick Test Accounts</strong> (password: <code>password</code>):
+      <div class="demo-pills">
+        <button type="button" class="pill" onclick="fillLogin('admin')">Admin</button>
+        <button type="button" class="pill" onclick="fillLogin('registrar')">Registrar</button>
+        <button type="button" class="pill" onclick="fillLogin('j.santos')">Teacher</button>
+        <button type="button" class="pill" onclick="fillLogin('cashier')">Cashier</button>
+        <button type="button" class="pill" onclick="fillLogin('m.regacho')">Student</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillLogin(user) {
+      document.getElementById('username').value = user;
+      document.getElementById('password').value = 'password';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('../api/auth/login.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        alertBox.style.display = 'block';
+        if (data.status === 'success') {
+          alertBox.className = 'alert success';
+          alertBox.textContent = `Welcome, ${data.user.FullName} (${data.user.Role})! Redirecting...`;
+          setTimeout(() => {
+            window.location.href = data.redirect;
+          }, 700);
+        } else {
+          alertBox.className = 'alert error';
+          alertBox.textContent = data.message || 'Login failed.';
+        }
+      } catch (err) {
+        alertBox.style.display = 'block';
+        alertBox.className = 'alert error';
+        alertBox.textContent = 'Unable to connect to the server.';
+      }
+    });
+  </script>
+</body>
+</html>

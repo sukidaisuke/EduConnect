@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cashier Dashboard | EduConnect LUNHS SHS</title>
+  <style>
+    :root {
+      --dark-plum: #301C4E;
+      --med-purple: #5B3491;
+      --lavender: #A889CF;
+      --bg-light: #F8F5FC;
+      --emerald: #2D875F;
+      --charcoal: #2B2633;
+      --muted: #696370;
+      --border: #DFD5EC;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: var(--bg-light); color: var(--charcoal); }
+
+    .topbar {
+      background: var(--dark-plum);
+      color: #fff;
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-weight: 800; font-size: 1.2rem; letter-spacing: 0.03em; }
+    .brand span { color: var(--lavender); font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem; }
+    .user-info { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+    .btn-logout {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+    .container { max-width: 1200px; margin: 1.8rem auto; padding: 0 1.5rem; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--med-purple);
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+    }
+    .stat-card.green { border-left-color: var(--emerald); }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .stat-value { font-size: 1.85rem; font-weight: 800; color: var(--dark-plum); margin-top: 0.2rem; }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .layout-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1.1rem; color: var(--dark-plum); }
+
+    .form-group { margin-bottom: 0.85rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; }
+    input, select {
+      width: 100%;
+      padding: 0.58rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--med-purple); }
+
+    .btn-emerald {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--emerald);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.3rem;
+    }
+    .btn-emerald:hover { background: #216849; }
+
+    .alert {
+      display: none;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 1rem;
+    }
+    .alert.success { background: #E8F5EF; color: var(--emerald); border: 1px solid #B7DFC9; }
+    .alert.error { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6CB; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th {
+      background: var(--med-purple);
+      color: #fff;
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+    }
+    td { padding: 0.62rem 0.75rem; border-bottom: 1px solid #EEE7F7; }
+    tr:hover td { background: #FAF7FE; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .badge.paid { background: #E8F5EF; color: var(--emerald); }
+    .badge.partial { background: #FFF8E1; color: #B26A00; }
+    .badge.unpaid { background: #FDECEA; color: #B71C1C; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">EDUCONNECT <span>LUNHS • Senior High School Cashier Office</span></div>
+    <div class="user-info">
+      <span id="welcomeUser">Loading...</span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="globalAlert" class="alert"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-label">Total Collected Fees</div>
+        <div class="stat-value" id="statCollected">₱0.00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Payment Transactions</div>
+        <div class="stat-value" id="statCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Partial / Unpaid Records</div>
+        <div class="stat-value" id="statPending">0</div>
+      </div>
+    </div>
+
+    <div class="layout-grid">
+      <div class="card">
+        <h2>Record Student Payment</h2>
+        <form id="paymentForm">
+          <div class="form-group">
+            <label>Select SHS Student</label>
+            <select id="payStudentSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>Amount (₱ PHP)</label>
+            <input type="number" id="payAmount" min="1" step="0.01" placeholder="e.g., 2500" required />
+          </div>
+          <div class="form-group">
+            <label>Payment Date</label>
+            <input type="date" id="payDate" required />
+          </div>
+          <div class="form-group">
+            <label>Payment Status</label>
+            <select id="payStatus" required>
+              <option value="Paid">Paid (Full)</option>
+              <option value="Partial">Partial Payment</option>
+              <option value="Unpaid">Unpaid / Billed</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-emerald">Post Payment</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Official Payment Ledger</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Receipt ID</th>
+                <th>Student</th>
+                <th>Grade & Strand</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function showAlert(msg, type = 'success') {
+      const box = document.getElementById('globalAlert');
+      box.textContent = msg;
+      box.className = `alert ${type}`;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 5000);
+    }
+
+    function formatPHP(val) {
+      return '₱' + Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    async function checkSession() {
+      const res = await fetch('../../api/auth/session.php');
+      if (!res.ok) {
+        window.location.href = '../index.html';
+        return;
+      }
+      const data = await res.json();
+      if (data.user.Role !== 'Cashier' && data.user.Role !== 'Administrator') {
+        window.location.href = '../index.html';
+        return;
+      }
+      document.getElementById('welcomeUser').textContent = `${data.user.FullName} (${data.user.Role})`;
+    }
+
+    async function logout() {
+      await fetch('../../api/auth/logout.php');
+      window.location.href = '../index.html';
+    }
+
+    async function loadStudents() {
+      const res = await fetch('../../api/students/read.php');
+      const json = await res.json();
+      const students = json.data || [];
+      const select = document.getElementById('payStudentSelect');
+      select.innerHTML = '<option value="">-- Choose SHS Student --</option>';
+      students.forEach(s => {
+        select.innerHTML += `<option value="${s.StudentID}">${s.StudentID} — ${s.LastName}, ${s.FirstName} (${s.GradeLevel} ${s.TrackStrand})</option>`;
+      });
+    }
+
+    async function loadPayments() {
+      const res = await fetch('../../api/payments/read.php');
+      const json = await res.json();
+      const payments = json.data || [];
+
+      let totalCollected = 0;
+      let pendingCount = 0;
+      const tbody = document.getElementById('paymentsTableBody');
+      tbody.innerHTML = '';
+
+      payments.forEach(p => {
+        const amt = parseFloat(p.Amount);
+        if (p.PaymentStatus === 'Paid' || p.PaymentStatus === 'Partial') {
+          totalCollected += amt;
+        }
+        if (p.PaymentStatus !== 'Paid') {
+          pendingCount++;
+        }
+
+        const cls = p.PaymentStatus.toLowerCase();
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${p.PaymentID}</strong></td>
+            <td>${p.StudentName} (${p.StudentID})</td>
+            <td>${p.GradeLevel} • ${p.TrackStrand}</td>
+            <td><strong>${formatPHP(amt)}</strong></td>
+            <td>${p.PaymentDate}</td>
+            <td><span class="badge ${cls}">${p.PaymentStatus}</span></td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('statCollected').textContent = formatPHP(totalCollected);
+      document.getElementById('statCount').textContent = payments.length;
+      document.getElementById('statPending').textContent = pendingCount;
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        StudentID: document.getElementById('payStudentSelect').value,
+        Amount: document.getElementById('payAmount').value,
+        PaymentDate: document.getElementById('payDate').value,
+        PaymentStatus: document.getElementById('payStatus').value
+      };
+
+      const res = await fetch('../../api/payments/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        showAlert(data.message, 'success');
+        document.getElementById('payAmount').value = '';
+        loadPayments();
+      } else {
+        showAlert(data.message, 'error');
+      }
+    });
+
+    (async () => {
+      document.getElementById('payDate').valueAsDate = new Date();
+      await checkSession();
+      await Promise.all([loadStudents(), loadPayments()]);
+    })();
+  </script>
+</body>
+</html>
